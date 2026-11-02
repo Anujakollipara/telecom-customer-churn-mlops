@@ -1,3 +1,20 @@
+import pandas as pd
+import numpy as np
+import joblib
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import Dict, Any
+
+app = FastAPI(
+    title="Customer Churn Prediction API",
+    description="API for predicting customer churn",
+    version="1.0"
+)
+
+# Load saved model
+model = joblib.load("best_churn_model.pkl")
+label_encoder = joblib.load("label_encoder.pkl")
 # Load saved model
 model = joblib.load("best_churn_model.pkl")
 label_encoder = joblib.load("label_encoder.pkl")
