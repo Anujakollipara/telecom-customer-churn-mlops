@@ -16,7 +16,7 @@ app = FastAPI(
 # Load saved model and metadata
 model = joblib.load("best_churn_model.pkl")
 label_encoder = joblib.load("label_encoder.pkl")
-metadata = joblib.load("api_metadata.pkl")
+
 
 RAW_COLUMNS = metadata["raw_columns"]
 USAGE_THRESHOLD = metadata["usage_threshold"]
