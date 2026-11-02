@@ -1,5 +1,5 @@
 
-name: Customer Churn ML CI Pipeline
+name: Customer Churn ML CI-CD Pipeline
 
 on:
   push:
@@ -7,35 +7,73 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  build-and-test:
+  build-and-publish:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # 2. Set up Python
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # 3. Install dependencies
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # 4. Validate Python code
       - name: Validate Python Code
         run: |
           python -m compileall -q api.py tests
 
+      # 5. Run automated tests
       - name: Run Automated Tests
         run: |
           python -m pytest tests -v
 
+      # 6. Verify application
       - name: Build Application
         run: |
           python -c "from api import app; print('FastAPI application loaded successfully')"
 
-      - name: CI Pipeline Completed
-        run: echo "All validation, tests and application build checks passed."
+      # 7. Set lowercase Docker image name
+      - name: Set Docker Image Name
+        id: image
+        run: |
+          IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY,,}"
+          echo "name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+
+      # 8. Login to GitHub Container Registry
+      - name: Login to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 9. Build and publish Docker image
+      - name: Build and Push Docker Image
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.image.outputs.name }}:latest
+            ${{ steps.image.outputs.name }}:${{ github.sha }}
+
+      # 10. Pipeline completion
+      - name: Pipeline Completed
+        run: echo "Validation successful and Docker image published to GHCR."
