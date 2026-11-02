@@ -1,0 +1,16 @@
+
+project:
+  name: Customer Churn Prediction
+  version: 1.0
+
+model:
+  algorithm: Best Performing Model
+  file: best_churn_model.pkl
+  encoder: label_encoder.pkl
+  metadata: api_metadata.pkl
+
+api:
+  host: 0.0.0.0
+  port: 8000
+  health_endpoint: /health
+  prediction_endpoint: /predict
